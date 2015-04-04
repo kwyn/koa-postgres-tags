@@ -19,16 +19,19 @@ describe('/emails', function (){
   describe('GET', function (){
     describe('with valid e-mail that has tags', function (){
       it('should return body with e-mail string and tags array',function (done){
-        request.get('/email/tagged@test.com')
-          .expect(200, function(res){
-            expect(typeof res.body.email).to.be('string');
+        request.get('/emails/tagged@test.com')
+          .expect(200)
+          .end(function(error, res){
+            console.log('response', res.body);
+            expect(typeof res.body.email).to.equal('string');
             done();
           })
       });
       it('should return body with tags array with appropriate keys',function (done){
-        request.get('/email/tagged@test.com')
-          .expect(200, function(res){
-            expect(Array.isArray(res.body.tags)).to.be.true();
+        request.get('/emails/tagged@test.com')
+          .expect(200)
+          .end(function(error, res){
+            expect(Array.isArray(res.body.tags)).to.be.true;
             expect(res.body.tags).to.include('tag1');
             expect(res.body.tags).to.include('tag1');
             done();
@@ -37,15 +40,16 @@ describe('/emails', function (){
     });
     describe('with valid e-mail that does not have tags', function (){
       it('should return body with e-mail string',function (done){
-        request.get('/email/tagged@test.com')
+        request.get('/emails/tagged@test.com')
           .expect(200, function(res){
             expect(typeof res.body.email).to.be('string');
             done();
           })
       });
       it('should return body with and empty tags array',function (done){
-        request.get('/email/tagged@test.com')
-          .expect(200, function(res){
+        request.get('/emails/tagged@test.com')
+          .expect(200)
+          .end(function(error, res){
             expect(Array.isArray(res.body.tags)).to.be.true();
             expect(res.body.tags.length).to.be(0);
             done();
@@ -54,7 +58,7 @@ describe('/emails', function (){
     });
     describe('with invalid e-mail', function (){
       it('should return an 400 error with message', function (done) {
-        request.get('/email')
+        request.get('/emails/arglbargl')
           .expect(400)
           .end(done);
       });
