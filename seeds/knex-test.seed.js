@@ -22,5 +22,7 @@ exports.seed = function() {
             // Map tags to tagged
             knex('tag_map').insert({id: 1, email_id: 1, tag_id: 1}),
             knex('tag_map').insert({id: 2, email_id: 1, tag_id: 2})
-        ));
+        )).catch(function(error){
+            console.error('knex test seed', error)
+        });
 };
