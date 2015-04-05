@@ -13,7 +13,7 @@ describe('/emails', function (){
         done();
       })
       .catch(function(err){
-        console.log(err);
+        console.error(err);
       })
   });
   describe('GET', function (){
@@ -22,7 +22,6 @@ describe('/emails', function (){
         request.get('/emails/tagged@test.com')
           .expect(200)
           .end(function(error, res){
-            console.log('response', res.body);
             expect(typeof res.body.email).to.equal('string');
             done();
           })
@@ -40,18 +39,19 @@ describe('/emails', function (){
     });
     describe('with valid e-mail that does not have tags', function (){
       it('should return body with e-mail string',function (done){
-        request.get('/emails/tagged@test.com')
-          .expect(200, function(res){
-            expect(typeof res.body.email).to.be('string');
+        request.get('/emails/untagged@test.com')
+          .expect(200)
+          .end(function(error, res){
+            expect(typeof res.body.email).to.equal('string');
             done();
           })
       });
       it('should return body with and empty tags array',function (done){
-        request.get('/emails/tagged@test.com')
+        request.get('/emails/untagged@test.com')
           .expect(200)
           .end(function(error, res){
-            expect(Array.isArray(res.body.tags)).to.be.true();
-            expect(res.body.tags.length).to.be(0);
+            expect(Array.isArray(res.body.tags)).to.be.true;
+            expect(res.body.tags.length).to.equal(0);
             done();
           });
       });

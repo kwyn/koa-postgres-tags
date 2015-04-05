@@ -24,9 +24,7 @@ var email_schema = Joi.string().lowercase().email();
 public.get('/emails/:email', function* (next){
   // Validate with Joi that it is an e-mail
   var valid = yield Joi_validate(this.params.email, email_schema);
-  console.log(valid.error);
   if(valid.error){
-    console.log('test')
     // Respond with invalid request
     this.status = 400;
     this.body = {
@@ -38,12 +36,10 @@ public.get('/emails/:email', function* (next){
   var email = valid.value;
 
   function getTags(email, knex){
-    console.log('email', email)
     return knex('emails')
             .where('email', email)
             .first('email_id')
             .then(function(result){
-              console.log('ID', result);
               return knex('tag_map')
                       .where('email_id', result.email_id)
                       .select('tag_id');
@@ -61,7 +57,6 @@ public.get('/emails/:email', function* (next){
     email: email,
     tags: _.pluck(tags, 'tag_name')
   };
-  console.log('data', data);
   // TODO: Look up through join table for tags.
   // If tags. data.tags = return tags
   this.body = data;
