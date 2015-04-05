@@ -10,6 +10,7 @@ var knex = require('knex-pg-middleware');
 var config = require('./config');
 var co = require('co');
 var _ = require('lodash');
+var Promise = require('bluebird');
 
 // Router
 var public = router();
@@ -49,6 +50,9 @@ public.get('/emails/:email', function* (next){
               return knex('tags')
                       .whereIn('tag_id', ids)
                       .select('tag_name');
+            })
+            .catch(function(error){
+              console.error('getTags error', error);
             });
   }
 
@@ -57,7 +61,6 @@ public.get('/emails/:email', function* (next){
     email: email,
     tags: _.pluck(tags, 'tag_name')
   };
-  // TODO: Look up through join table for tags.
   // If tags. data.tags = return tags
   this.body = data;
   return;
@@ -69,17 +72,60 @@ public.route({
 , validate: {
     body: {
       email: Joi.string().lowercase().email()
-    , password: Joi.string().max(100)
     , tags: Joi.array()
     }
   , type: 'json'
   }
 , handler: function*(){
-    this.req.body
-    var email = yield this.knex('email').where('email', email)
+    var body = this.request.body;
+    // Insert email and get id
+    var email_id = yield insertEmail(body.email,  this.knex);
+    // Create default tags
+    var tags = [];
+    // If tags were given, insert tags
+    if(body.tags){
+      tags = yield insertTags(body.tags, this.knex);
+    }
+    this.body = {
+      email: body.email,
+      tags: tags
+    };
     this.status = 201;
+    return;
+
+    function insertEmail(email, knex){
+      // Insert the email
+      return knex('emails')
+        // return email_id once inserted
+        .returning('email_id')
+        .insert({email: email});
+    }
+    function insertTags(tags, knex){
+            var insert_tags = tags.map(function(tag){
+              return knex('tags')
+                      .returning('tag_id')
+                      .insert({'tag_name': tag});
+            });
+            // Wait for promises to settle
+            return Promise.settle(insert_tags)
+              // Create tag_map records for e-mail
+              .map(function(promise){
+                // If a promise fails return it to be handled by catch function
+                if(promise.isRejected()){
+                  return promise;
+                }
+                var tag_id = promise.value();
+                return knex('tag_map').insert({tag_id: tag_id[0], email_id: email_id[0]});
+              })
+              .then(function(){
+                return tags;
+              })
+              .catch(function(error){
+                console.error('insertTags', error);
+              });
+    };
   }
-});
+})
 
 public.get('/tags/:tag', function*(){
 

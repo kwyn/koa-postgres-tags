@@ -170,7 +170,6 @@ describe('/emails', function (){
                   .from('tag_map')
                   .then(function(results){
                     var ids = _.pluck(results, 'tag_id');
-                    console.log('results', results, ids)
                     expect(ids).to.include.members(tag_ids);
                     done();
                   })
@@ -196,29 +195,37 @@ describe('/emails', function (){
           .end(done)
       })
     })
-    xdescribe('with valid e-mail and multiple tags', function(){
-      it('should return a 201', function (done){
 
-      });
-      it('should create record on tag table', function (done){
-
-      });
-      it('should create record on join table', function (done){
-
-      });
-    })
-    xdescribe('with invalid e-mail', function (){
+    describe('with invalid e-mail', function (){
       it('should return an error with message', function (done) {
-        request.get('/')
-          .expect(501)
-          .end(done);
+        request.post('/emails')
+          .send({
+            email: 'arglbargl',
+            tags: ['test1', 'test2']
+          })
+          .expect(400)
+          .end(function(err, res){
+            expect(res.error).to.exist;
+            done();
+          });
       });
     });
-    xdescribe('with existing email address', function (){
-      it('should return with resource updated status code', function (done){
-
-      });
-    });
+    describe('with valid email and without tags', function(){
+      it('should be create e-mail without tags', function(done){
+        request.post('/emails')
+          .send({
+            email: 'test@user.com'
+          })
+          .expect(201)
+          .end(function(err, res){
+            body = res.body;
+            expect(res.body.email).to.equal('test@user.com');
+            expect(res.body.tags).to.be.an('array');
+            expect(res.body.tags.length).to.equal(0);
+            done();
+          });
+        });
+    })
   });
 
   xdescribe('DELETE', function(){
