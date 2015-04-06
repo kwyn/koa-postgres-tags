@@ -14,6 +14,7 @@ exports.seed = function() {
             // insert test emails
             knex('emails').insert({email_id: 1, email: 'tagged@test.com'}),
             knex('emails').insert({email_id: 2, email: 'untagged@test.com'}),
+            knex('emails').insert({email_id: 3, email: 'onetag@test.com'}),
             // Insert tags
             knex('tags').insert({tag_id: 1, tag_name: 'tag1'}),
             knex('tags').insert({tag_id: 2, tag_name: 'tag2'})
@@ -21,7 +22,8 @@ exports.seed = function() {
         .then(Promise.join(
             // Map tags to tagged
             knex('tag_map').insert({id: 1, email_id: 1, tag_id: 1}),
-            knex('tag_map').insert({id: 2, email_id: 1, tag_id: 2})
+            knex('tag_map').insert({id: 2, email_id: 1, tag_id: 2}),
+            knex('tag_map').insert({id: 3, email_id: 3, tag_id: 1})
         )).catch(function(error){
             console.error('knex test seed', error)
         });

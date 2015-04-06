@@ -1,12 +1,15 @@
-// Dependencies
-var expect = require('chai').expect;
+// App to test
 var app = require('./../index');
+// Dependencies
+var _ = require('lodash');
+var Promise = require('bluebird');
+var expect = require('chai').expect;
 var request = require('supertest').agent(app.listen());
+
+// App and database
 var config = require('./../config.js')
 var knex = require('knex')(config.database);
 var seedDatabase = require('./../seeds/knex-test.seed.js').seed;
-var _ = require('lodash');
-var Promise = require('bluebird');
 
 describe('/emails', function (){
   beforeEach(function(done){
@@ -70,6 +73,35 @@ describe('/emails', function (){
           .end(done);
       });
     });
+
+    describe('with tags query with 1 tag', function(){
+      it('should return correct emails', function (done){
+        request
+          .get("/emails")
+          .query({tags: 'tag1'})
+          .end(function(err, res){
+            expect(res.body.emails).to.include.members(['tagged@test.com', 'onetag@test.com']);
+            done();
+          });
+      });
+    })
+    describe('with tags query with 2 tag', function(){
+      it('should return correct email', function (done){
+        request.get("/emails")
+          .query({tags: 'tag1,tag2'})
+          .end(function(err, res){
+            expect(res.body.emails).to.include('tagged@test.com');
+            done();
+          });
+      });
+    })
+    describe('with tags query with non-existent tag', function(){
+      it('should return 404 not found', function(done){
+        request.get("/emails")
+          .query({tags: 'arglbargl'})
+          .end(done);
+      });
+    })
   });
 
 
