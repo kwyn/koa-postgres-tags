@@ -38,13 +38,17 @@ Built with:
  - postgres
 
 To start:
+Be sure to have postgres installed and create a `.env` like the `example.env`
 
 ```
 npm install
+npm install knex -g
+knex migrate:latest
 npm start
 ```
 
 To test:
 ```
+npm install mocha -g
 npm test
 ```
